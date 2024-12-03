@@ -23,12 +23,30 @@ fun main() {
     }
 
     fun part2(input: String): Int {
-        return 0
+        val regex = Regex("""do\(\)|don't\(\)|mul\(\d+,\d+\)""")
+        val matches = regex.findAll(input).map { it.value }.toList()
+        val pairRegex = Regex("""mul\((\d+),(\d+)\)""")
+        var isMulEnabled = true
+        val pairs = mutableListOf<Pair<Int, Int>>()
+        for (instruction in matches) {
+            when (instruction) {
+                "do()" -> isMulEnabled = true
+                "don't()" -> isMulEnabled = false
+                else -> if (isMulEnabled && pairRegex.matches(instruction)) {
+                    val match = pairRegex.find(instruction)!!
+                    val first = match.groupValues[1].toInt()
+                    val second = match.groupValues[2].toInt()
+                    pairs.add(Pair(first, second))
+                }
+            }
+        }
+        return pairs.sumOf { it.first * it.second }
     }
 
-    val testInput = readText("day03/Day03_test")
-    check(part1(testInput) == 161)
-    check(part2(testInput) == 0)
+    val testInput1 = readText("day03/Day03_test_1")
+    check(part1(testInput1) == 161)
+    val testInput2 = readText("day03/Day03_test_2")
+    check(part2(testInput2) == 48)
 
     val input = readText("day03/Day03")
     part1(input).println()
