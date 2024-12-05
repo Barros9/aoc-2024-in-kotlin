@@ -6,17 +6,24 @@ import readInput
 fun main() {
     fun part1(input: List<String>): Int {
         val (rules, groups) = getRulesAndGroups(input)
-        val correctlyOrderedUpdates = groups.filter { group ->
+        val correctlyOrderedGroups = groups.filter { group ->
             isCorrectlyOrdered(group, rules)
         }
-        return correctlyOrderedUpdates.sumOf { findMiddlePage(it) }
+        return correctlyOrderedGroups.sumOf { findMiddlePage(it) }
     }
 
-    fun part2(input: List<String>): Int = 0
+    fun part2(input: List<String>): Int {
+        val (rules, groups) = getRulesAndGroups(input)
+        val incorrectlyOrderedGroups = groups.filter { group ->
+            !isCorrectlyOrdered(group, rules)
+        }
+        val reorderedGroups = incorrectlyOrderedGroups.map { reorderGroup(it, rules) }
+        return reorderedGroups.sumOf { findMiddlePage(it) }
+    }
 
     val testInput = readInput("day05/Day05_test")
     check(part1(testInput) == 143)
-    check(part2(testInput) == 0)
+    check(part2(testInput) == 123)
 
     val input = readInput("day05/Day05")
     part1(input).println()
@@ -47,4 +54,28 @@ private fun isCorrectlyOrdered(group: List<Int>, rules: List<Pair<Int, Int>>): B
         .all { (first, second) -> indexMap[first]!! < indexMap[second]!! }
 }
 
-private fun findMiddlePage(update: List<Int>): Int = update[update.size / 2]
+private fun findMiddlePage(group: List<Int>): Int = group[group.size / 2]
+
+private fun reorderGroup(group: List<Int>, rules: List<Pair<Int, Int>>): List<Int> {
+    val dependencies = rules.filter { (first, second) ->
+        first in group && second in group
+    }
+
+    val dependencyMap = mutableMapOf<Int, MutableList<Int>>()
+    group.forEach { page -> dependencyMap[page] = mutableListOf() }
+    dependencies.forEach { (first, second) -> dependencyMap[second]?.add(first) }
+
+    val result = mutableListOf<Int>()
+    val visited = mutableSetOf<Int>()
+
+    fun visit(page: Int) {
+        if (page !in visited) {
+            visited.add(page)
+            dependencyMap[page]?.forEach { visit(it) }
+            result.add(page)
+        }
+    }
+
+    group.forEach { visit(it) }
+    return result.reversed()
+}
