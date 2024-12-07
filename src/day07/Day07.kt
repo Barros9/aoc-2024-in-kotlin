@@ -9,18 +9,27 @@ fun main() {
         var sum = BigDecimal.ZERO
         input.forEach { equation ->
             val (total, numbers) = parseEquation(equation)
-            if (canMatchResult(total, numbers)) sum = sum.add(total)
+            if (canMatchResult(total, numbers, includeConcatenation = false)) {
+                sum = sum.add(total)
+            }
         }
         return sum
     }
 
     fun part2(input: List<String>): BigDecimal {
-        return BigDecimal.ZERO
+        var sum = BigDecimal.ZERO
+        input.forEach { equation ->
+            val (total, numbers) = parseEquation(equation)
+            if (canMatchResult(total, numbers, includeConcatenation = true)) {
+                sum = sum.add(total)
+            }
+        }
+        return sum
     }
 
     val testInput = readInput("day07/Day07_test")
     check(part1(testInput) == BigDecimal("3749"))
-    check(part2(testInput) == BigDecimal.ZERO)
+    check(part2(testInput) == BigDecimal("11387"))
 
     val input = readInput("day07/Day07")
     part1(input).println()
@@ -34,9 +43,9 @@ private fun parseEquation(equation: String): Pair<BigDecimal, List<BigDecimal>> 
     return total to numbers
 }
 
-private fun canMatchResult(total: BigDecimal, numbers: List<BigDecimal>): Boolean {
+private fun canMatchResult(total: BigDecimal, numbers: List<BigDecimal>, includeConcatenation: Boolean): Boolean {
     val operatorCount = numbers.size - 1
-    val operators = listOf('+', '*')
+    val operators = if (includeConcatenation) listOf('+', '*', '|') else listOf('+', '*')
 
     val allOperatorCombinations = generateOperatorCombinations(operators, operatorCount)
 
@@ -64,8 +73,15 @@ private fun evaluateExpression(numbers: List<BigDecimal>, operators: List<Char>)
         result = when (operators[i]) {
             '+' -> result.add(nextNumber)
             '*' -> result.multiply(nextNumber)
+            '|' -> concatenate(result, nextNumber)
             else -> throw IllegalArgumentException("Unsupported operator: ${operators[i]}")
         }
     }
     return result
+}
+
+private fun concatenate(left: BigDecimal, right: BigDecimal): BigDecimal {
+    val leftStr = left.toPlainString()
+    val rightStr = right.toPlainString()
+    return (leftStr + rightStr).toBigDecimal()
 }
