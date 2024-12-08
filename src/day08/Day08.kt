@@ -2,6 +2,7 @@ package day08
 
 import println
 import readInput
+import kotlin.math.abs
 
 fun main() {
     fun part1(input: List<String>): Int {
@@ -10,12 +11,15 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return 0
+        val nodes = parseGrid(input)
+        return countAntiNodes(nodes, input) { a, b, diff ->
+            antiNodesForPart2(a, b, diff, input)
+        }
     }
 
     val testInput = readInput("day08/Day08_test")
     check(part1(testInput) == 14)
-    check(part2(testInput) == 0)
+    check(part2(testInput) == 34)
 
     val input = readInput("day08/Day08")
     part1(input).println()
@@ -40,6 +44,9 @@ private fun countAntiNodes(
 
 private fun antiNodesForPart1(a: Point2D, b: Point2D, diff: Point2D): Set<Point2D> =
     setOf(a + diff, b - diff)
+
+private fun antiNodesForPart2(a: Point2D, b: Point2D, diff: Point2D, grid: List<String>): Set<Point2D> =
+    (generateSequence(a) { it - diff }.takeWhile { it.isOnGrid(grid) } + generateSequence(b) { it + diff }.takeWhile { it.isOnGrid(grid) }).toSet()
 
 private fun parseGrid(input: List<String>): Map<Char, List<Point2D>> =
     input.flatMapIndexed { y, row ->
