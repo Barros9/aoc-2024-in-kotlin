@@ -9,42 +9,42 @@ fun main() {
             .mapNotNull { findMinCost(it) }
             .sum()
 
-    fun part2(input: List<String>): Int {
-        return 0
-    }
+    fun part2(input: List<String>): Long =
+        parseMachines(input, 10_000_000_000_000L)
+            .mapNotNull { findMinCostLarge(it) }
+            .sum()
 
     val testInput = readInput("day13/Day13_test")
     check(part1(testInput) == 480)
-    check(part2(testInput) == 0)
 
     val input = readInput("day13/Day13")
     part1(input).println()
     part2(input).println()
 }
 
-private data class Machine(val aDelta: Pair<Int, Int>, val bDelta: Pair<Int, Int>, val prize: Pair<Int, Int>)
+private data class Machine(val aDelta: Pair<Long, Long>, val bDelta: Pair<Long, Long>, val prize: Pair<Long, Long>)
 
-private fun parseMachines(input: List<String>): List<Machine> {
+private fun parseMachines(input: List<String>, offset: Long = 0L): List<Machine> {
     val filtered = input.filter { it.isNotBlank() }
     return (filtered.indices step 3).map { i ->
         val a = parseLine(filtered[i])
         val b = parseLine(filtered[i+1])
         val p = parsePrizeLine(filtered[i+2])
-        Machine(a, b, p)
+        Machine(a, b, (p.first + offset to p.second + offset))
     }
 }
 
-private fun parseLine(line: String): Pair<Int, Int> {
+private fun parseLine(line: String): Pair<Long, Long> {
     val parts = line.split(",")
-    val xVal = parts[0].substringAfter("X").replace("+", "").replace("=", "").trim().toInt()
-    val yVal = parts[1].substringAfter("Y").replace("+", "").replace("=", "").trim().toInt()
+    val xVal = parts[0].substringAfter("X").replace("+", "").replace("=", "").trim().toLong()
+    val yVal = parts[1].substringAfter("Y").replace("+", "").replace("=", "").trim().toLong()
     return xVal to yVal
 }
 
-private fun parsePrizeLine(line: String): Pair<Int, Int> {
+private fun parsePrizeLine(line: String): Pair<Long, Long> {
     val pParts = line.split(",")
-    val pX = pParts[0].substringAfter("X=").trim().toInt()
-    val pY = pParts[1].substringAfter("Y=").trim().toInt()
+    val pX = pParts[0].substringAfter("X=").trim().toLong()
+    val pY = pParts[1].substringAfter("Y=").trim().toLong()
     return pX to pY
 }
 
@@ -61,4 +61,25 @@ private fun findMinCost(machine: Machine): Int? {
         }
     }
     return minCost
+}
+
+private fun findMinCostLarge(machine: Machine): Long? {
+    val (ax, ay) = machine.aDelta
+    val (bx, by) = machine.bDelta
+    val (px, py) = machine.prize
+
+    val det = ax * by - ay * bx
+    if (det == 0L) return null
+
+    val aNum = (px * by - py * bx)
+    val bNum = (ax * py - ay * px)
+
+    if (aNum % det != 0L || bNum % det != 0L) return null
+
+    val a = aNum / det
+    val b = bNum / det
+
+    if (a < 0 || b < 0) return null
+
+    return 3*a + b
 }
