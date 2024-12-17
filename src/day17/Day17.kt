@@ -2,7 +2,6 @@ package day17
 
 import println
 import readInput
-import java.util.*
 
 fun main() {
     fun part1(input: List<String>): String {
@@ -11,10 +10,26 @@ fun main() {
         return output.joinToString(",")
     }
 
-    fun part2(input: List<String>): Int = 0
+    fun part2(input: List<String>): Int {
+        val (_, program) = parseInput(input)
 
-    val testInput = readInput("day17/Day17_test")
-    check(part1(testInput) == "4,6,3,5,6,3,5,2,1,0")
+        var a = 1
+        while (true) {
+            val registers = mutableListOf(a, 0, 0)
+            val output = runProgram(registers, program)
+
+            if (output == program) {
+                return a
+            }
+            a++
+        }
+    }
+
+    val testInput1 = readInput("day17/Day17_test_1")
+    check(part1(testInput1) == "4,6,3,5,6,3,5,2,1,0")
+
+    val testInput2 = readInput("day17/Day17_test_2")
+    check(part2(testInput2) == 117440)
 
     val input = readInput("day17/Day17")
     part1(input).println()
