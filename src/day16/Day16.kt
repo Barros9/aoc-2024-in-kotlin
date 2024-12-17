@@ -6,13 +6,6 @@ import java.util.*
 
 fun main() {
     fun part1(input: List<String>): Int {
-        val directions = listOf(
-            -1 to 0,
-            0 to 1,
-            1 to 0,
-            0 to -1
-        )
-
         val (start, end, maze) = parseMaze(input)
 
         val queue = PriorityQueue<State> { a, b -> a.score - b.score }
@@ -21,10 +14,31 @@ fun main() {
         queue.add(State(start.first, start.second, 1, 0))
         visited[Triple(start.first, start.second, 1)] = 0
 
-        return bfs(maze, queue, visited, directions, end)
+        return bfs(maze, queue, visited, end)
     }
 
-    fun part2(input: List<String>): Long = 0
+    fun part2(input: List<String>): Int {
+        val (start, end, maze) = parseMaze(input)
+
+        val queue = PriorityQueue<State> { a, b -> a.score - b.score }
+        val visited = mutableMapOf<Triple<Int, Int, Int>, Int>()
+        val bestPaths = mutableSetOf<Pair<Int, Int>>()
+
+        queue.add(State(start.first, start.second, 1, 0))
+        visited[Triple(start.first, start.second, 1)] = 0
+
+        val minScore = bfs(maze, queue, visited, end)
+
+        for (entry in visited) {
+            val (key, score) = entry
+            if (score == minScore) {
+                val (x, y, _) = key
+                bestPaths.add(Pair(x, y))
+            }
+        }
+
+        return bestPaths.size
+    }
 
     val testInput = readInput("day16/Day16_test")
     check(part1(testInput) == 7036)
@@ -56,7 +70,6 @@ private fun bfs(
     maze: MutableList<MutableList<Char>>,
     queue: PriorityQueue<State>,
     visited: MutableMap<Triple<Int, Int, Int>, Int>,
-    directions: List<Pair<Int, Int>>,
     end: Pair<Int, Int>
 ): Int {
     while (queue.isNotEmpty()) {
@@ -83,3 +96,10 @@ private fun bfs(
     }
     return -1
 }
+
+private val directions = listOf(
+    -1 to 0,
+    0 to 1,
+    1 to 0,
+    0 to -1
+)
