@@ -5,21 +5,32 @@ import readInput
 fun main() {
     fun part1(input: List<String>, gridSize: Int): Int {
         val grid = parseInput(input, gridSize)
-        printGrid(grid)
         return bfs(grid, Pair(0, 0), Pair(gridSize - 1, gridSize - 1))
     }
 
-    fun part2(input: List<String>): Int = 0
+    fun part2(input: List<String>, gridSize: Int): String {
+        val grid = Array(gridSize) { CharArray(gridSize) { '.' } }
+        val corruptedCoordinates = input.map { line -> line.split(",").map { it.toInt() } }
+
+        for ((x, y) in corruptedCoordinates) {
+            grid[y][x] = '#'
+
+            if (bfs(grid, Pair(0, 0), Pair(gridSize - 1, gridSize - 1)) == -1) {
+                return "$x,$y"
+            }
+        }
+        return "No block"
+    }
 
     val testInput = readInput("day18/Day18_test")
     val testGridSize = 7
     check(part1(testInput.take(12), testGridSize) == 22)
-    check(part2(testInput) == 0)
+    check(part2(testInput, testGridSize) == "6,1")
 
     val input = readInput("day18/Day18")
     val normalGridSize = 71
     println(part1(input.take(1024), normalGridSize))
-    println(part2(input))
+    println(part2(input, normalGridSize))
 }
 
 private fun parseInput(input: List<String>, gridSize: Int): Array<CharArray> {
@@ -31,12 +42,6 @@ private fun parseInput(input: List<String>, gridSize: Int): Array<CharArray> {
         }
     }
     return grid
-}
-
-private fun printGrid(grid: Array<CharArray>) {
-    grid.forEach { row ->
-        println(row.joinToString(""))
-    }
 }
 
 private fun bfs(grid: Array<CharArray>, start: Pair<Int, Int>, end: Pair<Int, Int>): Int {
