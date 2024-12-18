@@ -8,14 +8,17 @@ fun main() {
         return solve(warehouse, robot, moves)
     }
 
-    fun part2(input: List<String>): Int = 0
+    fun part2(input: List<String>): Int {
+        val (warehouse, robot, moves) = parseInput(input)
+        return solve(warehouse.enlarge(), Index(robot.x * 2, robot.y), moves)
+    }
 
     val testInput = readInput("day15/Day15_test")
     check(part1(testInput) == 2028)
-    check(part2(testInput) == 0)
 
     val input = readInput("day15/Day15")
     println(part1(input))
+    println(part2(input))
 }
 
 private fun parseInput(input: List<String>): Triple<MutableMap<Index, Char>, Index, String> {
@@ -75,6 +78,13 @@ private fun solve(wh: Map<Index, Char>, robot: Index, moves: String): Int {
     for ((k, v) in warehouse) if (v.isBox(includeClose = false)) sum += 100 * k.y + k.x
 
     return sum
+}
+
+private fun Map<Index, Char>.enlarge() = buildMap {
+    for ((k, v) in this@enlarge) {
+        put(Index(k.x * 2, k.y), if (v == 'O') '[' else '#')
+        put(Index(k.x * 2 + 1, k.y), if (v == 'O') ']' else '#')
+    }
 }
 
 private fun Char.isBox(includeClose: Boolean = true) = this == 'O' || this == '[' || (includeClose && this == ']')
